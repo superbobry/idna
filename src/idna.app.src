@@ -1,0 +1,7 @@
+{application, idna, [
+    {description, "IDNA Decoder / Encoder."},
+    {vsn, git},
+    {registered, []},
+    {applications, [kernel]}
+]}.
+
