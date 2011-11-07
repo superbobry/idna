@@ -1,25 +1,17 @@
 -module(punycode).
-
--export([encode/1, decode/1, test/0, test/1]).
+-export([encode/1, decode/1]).
 
 %%============================================================================
 %% Constants
 %%============================================================================
 
 -define(BASE, 36).
-
 -define(TMIN, 1).
-
 -define(TMAX, 26).
-
 -define(SKEW, 38).
-
 -define(DAMP, 700).
-
 -define(INITIAL_BIAS, 72).
-
 -define(INITIAL_N, 128).
-
 -define(DELIMITER, $-).
 
 %%============================================================================
@@ -114,7 +106,7 @@ decode_forloop([C|Input], State=#decode{bias = Bias, i = I, k = K, w = W}) ->
   I2 = I + D * W,
   case threshold(K, Bias) of
     T when D < T -> {Input, State#decode{i = I2}};
-    T -> decode_forloop(Input, State#decode{i = I2, k = K + ?BASE, w = W * (?BASE - T)}) 
+    T -> decode_forloop(Input, State#decode{i = I2, k = K + ?BASE, w = W * (?BASE - T)})
   end.
 
 threshold(K, Bias) when K =< Bias + ?TMIN -> ?TMIN;
@@ -134,22 +126,4 @@ adapt_whileloop(Delta, K) ->
       adapt_whileloop(Delta div (?BASE - ?TMIN), K + ?BASE);
     false ->
       K + (((?BASE - ?TMIN + 1) * Delta) div (Delta + ?SKEW))
-  end.
-
-%%============================================================================
-%% Test functions
-%%============================================================================
-
-test() ->
-  lists:foreach(fun(Path) -> test(Path) end, filelib:wildcard("test/punycode_*")).
-
-test(Path) ->
-  {ok, Test} = file:consult(Path),
-  Encoded = encode(proplists:get_value(unicode, Test)),
-  Punycode = proplists:get_value(punycode, Test),
-  case Encoded of
-    Punycode ->
-      ok;
-    ReturnValue ->
-      erlang:error({test_failed, encode, Path, ReturnValue})
   end.
