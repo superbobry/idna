@@ -11,11 +11,9 @@
 %%============================================================================
 
 -define(SERVER, ?MODULE).
-
+-define(CACHE, filelib:join(code:priv_dir(idna), "UnicodeData.txt")).
 -define(COMBINING_CLASS, 4).
-
 -define(DECOMPOSITION, 6).
-
 -define(LOWERCASE_MAPPING, 14).
 
 %%============================================================================
@@ -77,24 +75,33 @@ handle_call({composition, A, B}, _From, Data) ->
       {reply, undefined, Data}
   end;
 handle_call({load, Source}, _From, _State) when is_binary(Source) ->
-  {reply, ok, parse(Source)};
+    {reply, ok, parse(Source)};
 handle_call({load, Source}, _From, State) when is_list(Source) ->
-  case lists:prefix("http://", Source) of
-    true ->
-      case http:request(get, {Source, []}, [], [{body_format, binary}]) of
-        {ok, {{_, 200, _}, _, Data}} ->
-          {reply, ok, parse(Data)};
-        _ ->
-          {reply, {error, bad_http_response}, State}
-      end;
-    false ->
-      case file:read_file(Source) of
-        {ok, Data} ->
-          {reply, ok, parse(Data)};
-        Error ->
-          {reply, Error, State}
-      end
-  end;
+    case lists:prefix("http://", Source) of
+        true ->
+            %% check if we have the file in cache already, before
+            %% downloading anything.
+            case file:is_regular(?CACHE) of
+                true -> handle_call({load, ?CACHE}, _From, State);
+                false ->
+                    case httpc:request(get, {Source, []},
+                                       [], [{body_format, binary}]) of
+                        {ok, {{_, 200, _}, _, Data}} ->
+                            %% cache the downloaded file in app's priv dir.
+                            file:write_file(?CACHE, Data),
+                            {reply, ok, parse(Data)};
+                        _ ->
+                            {reply, {error, bad_http_response}, State}
+                    end
+            end;
+        false ->
+            case file:read_file(Source) of
+                {ok, Data} ->
+                    {reply, ok, parse(Data)};
+                Error ->
+                    {reply, Error, State}
+            end
+    end;
 handle_call({lowercase, C}, _From, Data) ->
   lookup(C, Data, fun(Props) ->
     case element(?LOWERCASE_MAPPING, Props) of
