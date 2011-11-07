@@ -11,7 +11,7 @@
 %%============================================================================
 
 -define(SERVER, ?MODULE).
--define(CACHE, filelib:join(code:priv_dir(idna), "UnicodeData.txt")).
+-define(CACHE, filename:join(code:priv_dir(idna), "UnicodeData.txt")).
 -define(COMBINING_CLASS, 4).
 -define(DECOMPOSITION, 6).
 -define(LOWERCASE_MAPPING, 14).
@@ -81,7 +81,7 @@ handle_call({load, Source}, _From, State) when is_list(Source) ->
         true ->
             %% check if we have the file in cache already, before
             %% downloading anything.
-            case file:is_regular(?CACHE) of
+            case filelib:is_regular(?CACHE) of
                 true -> handle_call({load, ?CACHE}, _From, State);
                 false ->
                     case httpc:request(get, {Source, []},
