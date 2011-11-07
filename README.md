@@ -1,28 +1,32 @@
-erlang-idna
-===========
+idna
+====
 
-A pure Erlang IDNA implementation.
-
-An attempt will be made to read from `priv/UnicodeData.txt`. If the file
-does not exist, it is downloaded from unicode.org, and an attempt is made to
-save it to the above filename, though no checking is done as to whether or not
-this succeeded.
+Punycode (and IDNA) implementation for Erlang.
 
 
 Quick start:
 ------------
 
+Start with the usual [rebar](https://github.com/basho/rebar) boilerplate:
+
+```bash
+$ rebar get-deps compile
+==> ux (compile)
+==> erlang-idna (compile)
+Compiled src/punycode.erl
+Compiled src/idna.erl
+```
+
+Now, it's time for some action!
+
 ```erlang
-$ rebar compile
-...
-$ erl -pa ebin
-...
-1> inets:start(), idna:start(). % downloads UnicodeData.txt from unicode.org
-...
-2> Domain = xmerl_ucs:from_utf8("www.詹姆斯.com").
-...
-3> idna:to_ascii(Domain).
-...
+$ erl -pa ebin deps/*/ebin
+1> Domain = xmerl_ucs:from_utf8("президент.рф").
+[1087,1088,1077,1079,1080,1076,1077,1085,1090,46,1088,1092]
+2> idna:to_ascii(Domain).
+"xn--d1abbgf6aiiy.xn--p1ai"
+3> idna:from_ascii("xn--d1abbgf6aiiy.xn--p1ai").
+[1087,1088,1077,1079,1080,1076,1077,1085,1090,46,1088,1092]
 ```
 
 Reference material:
@@ -30,7 +34,3 @@ Reference material:
 
 - [RFC3490](http://www.ietf.org/rfc/rfc3490.txt) IDNA
 - [RFC3492](http://www.ietf.org/rfc/rfc3492.txt) Punnycode
-- [addressable](http://github.com/sporkmonger/addressable) Ruby URI implementation
-- [punycode4r](http://raa.ruby-lang.org/project/punycode4r) Ruby punycode implementation
-- [Unicode Character Database](http://www.unicode.org/Public/UNIDATA/UCD.html)
-- [UAX #15](http://www.unicode.org/reports/tr15) Unicode Normalization Forms
