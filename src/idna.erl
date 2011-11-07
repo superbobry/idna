@@ -18,9 +18,6 @@ to_ascii(Domain) ->
 from_ascii(Domain) ->
   from_ascii(string:tokens(Domain, "."), []).
 
-utf8_to_ascii(Domain) ->
-  to_ascii(xmerl_ucs:from_utf8(Domain)).
-
 %%============================================================================
 %% Helper functions
 %%============================================================================
