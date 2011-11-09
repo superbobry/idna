@@ -26,7 +26,7 @@
 %%============================================================================
 
 encode(Input) ->
-  encode(Input, lists:reverse(lists:filter(fun(C) -> C < 16#80 end, Input))).
+    encode(Input, lists:reverse(lists:filter(fun(C) -> C < 16#80 end, Input))).
 
 decode(Input) ->
 	decode(Input, [], []).
@@ -36,10 +36,10 @@ decode(Input) ->
 %%============================================================================
 
 encode(Input, Basic) ->
-  case length(Basic) of
-    0 -> encode_whileloop(Input, [], #encode{h=0, b=0});
-    N -> encode_whileloop(Input, [?DELIMITER|Basic], #encode{h=N, b=N})
-  end.
+    case length(Basic) of
+        0 -> encode_whileloop(Input, [], #encode{h=0, b=0});
+        N -> encode_whileloop(Input, [?DELIMITER|Basic], #encode{h=N, b=N})
+    end.
 
 encode_whileloop(Input, Output, State=#encode{h=H}) when H < length(Input) ->
   N = State#encode.n,
